@@ -1,1 +1,5 @@
-spring.application.name=demo-app
+spring:
+  profiles:
+    active: local
+  application:
+    name: paymentcollection
