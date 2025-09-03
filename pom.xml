@@ -94,7 +94,6 @@
 						<googleJavaFormat>
 							<version>1.22.0</version> <!-- supports Java 21 -->
 						</googleJavaFormat>
-						<target>src/main/java/**/*.java,src/test/java/**/*.java</target>
 					</java>
 					<pom>
 						<includes>
