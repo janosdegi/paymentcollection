@@ -33,3 +33,21 @@ docker compose down
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+### Code Style
+
+- Formatting enforced by **Spotless** (Google Java Format).
+- Style checks by **Checkstyle** (Google rules).
+- CI runs `./mvnw clean verify` and will fail on violations.
+- Optional: enable local pre-commit hook:
+```bash
+.git/hooks/pre-commit
+```
+- Before commit
+```bash
+./mvnw spotless:apply checkstyle:check
+```
+```bash
+./mvnw clean verify
+```
+

@@ -11,7 +11,7 @@
 	<groupId>com.example</groupId>
 	<artifactId>paymentcollection</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>demo-app</name>
+	<name>paymentcollection</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -85,7 +85,67 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>2.43.0</version>
+				<configuration>
+					<java>
+						<googleJavaFormat>
+							<version>1.22.0</version> <!-- supports Java 21 -->
+						</googleJavaFormat>
+						<target>src/main/java/**/*.java,src/test/java/**/*.java</target>
+					</java>
+					<pom>
+						<includes>
+							<include>pom.xml</include>
+						</includes>
+					</pom>
+				</configuration>
+				<executions>
+					<execution>
+						<id>spotless-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Static style checks: Checkstyle (Google rules) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.3.1</version>
+				<dependencies>
+					<!-- Pin Checkstyle engine (compatible with Java 21) -->
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>10.17.0</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!-- Use built-in Google rules; no local XML needed -->
+					<configLocation>google_checks.xml</configLocation>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<failOnViolation>true</failOnViolation>
+					<violationSeverity>error</violationSeverity>
+					<encoding>UTF-8</encoding>
+					<consoleOutput>true</consoleOutput>
+				</configuration>
+				<executions>
+					<execution>
+						<id>checkstyle-verify</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+
 	</build>
 
 </project>
