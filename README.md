@@ -51,3 +51,9 @@ docker compose down
 ./mvnw clean verify
 ```
 
+## Database Schema
+
+- Managed by **Flyway** migrations in `src/main/resources/db/migration`.
+- Initial schema (`V2__add_payment_indexes.sql`) creates the `payments` table with:
+    - id, amount, currency, status, method, providerRef, customerId, timestamps, metadata
+- JPA entity: `io.paymentcollection.payment.domain.Payment`
