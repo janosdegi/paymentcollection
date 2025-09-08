@@ -57,3 +57,16 @@ docker compose down
 - Initial schema (`V2__add_payment_indexes.sql`) creates the `payments` table with:
     - id, amount, currency, status, method, providerRef, customerId, timestamps, metadata
 - JPA entity: `io.paymentcollection.payment.domain.Payment`
+
+## Error Handling (RFC 7807)
+
+We use RFC 7807 (application/problem+json) with a global exception 
+handler so that all errors in the API return a consistent, 
+machine-readable format (type, title, status, detail, traceId, and 
+validation errors[]).
+
+All errors return `application/problem+json` with:
+- `type`, `title`, `status`, `detail`, `traceId`
+- Validation adds `errors[]` with `{field, message}`
+
+Clients should log and/or display `detail` and include `X-Trace-Id` when reporting issues.

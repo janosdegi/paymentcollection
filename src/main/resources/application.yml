@@ -3,3 +3,6 @@ spring:
     active: local
   application:
     name: paymentcollection
+  mvc:
+    problemdetails:
+      enabled: true
