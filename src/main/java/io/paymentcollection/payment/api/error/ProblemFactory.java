@@ -26,16 +26,16 @@ It ensures APIs return errors consistently with fields like:
 */
 public final class ProblemFactory {
 
-    public static ProblemDetail problem(
-        HttpStatus status, String title, String detail, String typeUri, String traceId) {
-        ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, detail);
-        pd.setTitle(title);
-        if (typeUri != null && !typeUri.isBlank()) {
-            pd.setType(java.net.URI.create(typeUri));
-        }
-        if (traceId != null) {
-            pd.setProperty("traceId", traceId);
-        }
-        return pd;
-      }
+  public static ProblemDetail problem(
+      HttpStatus status, String title, String detail, String typeUri, String traceId) {
+    ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, detail);
+    pd.setTitle(title);
+    if (typeUri != null && !typeUri.isBlank()) {
+      pd.setType(java.net.URI.create(typeUri));
+    }
+    if (traceId != null) {
+      pd.setProperty("traceId", traceId);
+    }
+    return pd;
+  }
 }
