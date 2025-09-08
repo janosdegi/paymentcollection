@@ -70,3 +70,12 @@ All errors return `application/problem+json` with:
 - Validation adds `errors[]` with `{field, message}`
 
 Clients should log and/or display `detail` and include `X-Trace-Id` when reporting issues.
+
+## POST /api/payments (Idempotent)
+
+- Requires `Idempotency-Key` header.
+- First request → `201 Created` + `Location`.
+- Retry with same key + same body → `200 OK` (returns existing).
+- Same key + different body → `409 Conflict`.
+- Validation: `amount > 0`, supported `currency/method`, `customerId` required.
+- Errors are `application/problem+json` (RFC 7807).

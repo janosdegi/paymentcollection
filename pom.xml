@@ -95,8 +95,12 @@
 			<version>1.20.2</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- H2 test dep NOT needed since we’ll use Testcontainers -->
 
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.6.0</version> <!-- latest as of 2025 -->
+		</dependency>
 	</dependencies>
 
 	<build>
