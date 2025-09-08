@@ -1,12 +1,8 @@
 package io.paymentcollection.payment.api;
 
-/**
- * @author degijanos
- * @version 1.0
- * @since 2025. 09. 08.
- */
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.paymentcollection.payment.application.CreatePaymentHandler;
+import io.paymentcollection.payment.application.GetPaymentHandler;
 import io.paymentcollection.payment.domain.Payment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,20 +11,31 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+/**
+ * @author degijanos
+ * @version 1.0
+ * @since 2025. 09. 08.
+ */
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-  private final CreatePaymentHandler handler;
+  private final CreatePaymentHandler createHandler;
+  private final GetPaymentHandler getHandler;
   private final ObjectMapper objectMapper;
 
-  public PaymentController(CreatePaymentHandler handler, ObjectMapper objectMapper) {
-    this.handler = handler;
+  public PaymentController(CreatePaymentHandler handler, GetPaymentHandler getHandler, ObjectMapper objectMapper) {
+    this.createHandler = handler;
+    this.getHandler = getHandler;
     this.objectMapper = objectMapper;
   }
 
@@ -79,7 +86,7 @@ public class PaymentController {
             idemKey,
             canonicalJson(request));
 
-    var res = handler.handle(cmd);
+    var res = createHandler.handle(cmd);
 
     if (res.payment() != null) {
       var body = toResponse(res.payment());
@@ -97,6 +104,39 @@ public class PaymentController {
         .contentType(MediaType.valueOf("application/problem+json"))
         .body(new SimpleProblem(res.status().value(), res.error()));
   }
+
+    @GetMapping("/{id}")
+    @io.swagger.v3.oas.annotations.Operation(
+            summary = "Get payment by id",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "OK",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = PaymentResponse.class)
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "404",
+                            description = "Not found",
+                            content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/problem+json")
+                    )
+            }
+    )
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        return getHandler.byId(id)
+                .<ResponseEntity<?>>map(p -> ResponseEntity.ok(toResponse(p)))
+                .orElseGet(() -> {
+                    var pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+                    pd.setTitle("Payment Not Found");
+                    pd.setDetail("Payment %d not found".formatted(id));
+                    pd.setType(URI.create("https://yourapp.dev/errors/not-found"));
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .contentType(MediaType.valueOf("application/problem+json"))
+                            .body(pd);
+                });
+    }
 
   private String canonicalJson(Object o) {
     try {

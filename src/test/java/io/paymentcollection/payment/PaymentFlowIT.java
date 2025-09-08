@@ -1,5 +1,6 @@
 package io.paymentcollection.payment;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,4 +70,11 @@ class PaymentFlowIT extends ITBase {
                 .content(b))
         .andExpect(status().isConflict());
   }
+
+    @Test
+    void get_missing_returns_404() throws Exception {
+        mvc.perform(get("/api/payments/123456"))
+                .andExpect(status().isNotFound())
+                .andExpect(header().string("Content-Type", "application/problem+json"));
+    }
 }

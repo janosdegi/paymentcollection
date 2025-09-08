@@ -9,8 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.paymentcollection.payment.api.error.GlobalExceptionHandler;
 import io.paymentcollection.payment.application.CreatePaymentHandler;
+import io.paymentcollection.payment.application.GetPaymentHandler;
 import io.paymentcollection.payment.domain.Payment;
 import java.math.BigDecimal;
+import java.util.Optional;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author degijanos
@@ -32,7 +37,11 @@ class PaymentControllerTest {
   @Autowired MockMvc mvc;
 
   // ✅ Provide the missing bean for the MVC slice
-  @MockitoBean CreatePaymentHandler handler;
+  @MockitoBean
+  CreatePaymentHandler handler;
+
+  @MockitoBean
+  GetPaymentHandler getPaymentHandler;
 
   @Test
   void create_valid_returns_201_and_location() throws Exception {
@@ -87,5 +96,35 @@ class PaymentControllerTest {
         .andExpect(header().string("Content-Type", "application/problem+json"))
         .andExpect(jsonPath("$.title").value("Validation Failed"))
         .andExpect(jsonPath("$.errors").isArray());
+  }
+
+  @Test
+  void get_existing_returns_200_with_json() throws Exception {
+    var p = new Payment();
+    p.setId(42L);
+    p.setAmount(new BigDecimal("15.00"));
+    p.setCurrency("EUR");
+    p.setMethod("CARD");
+    p.setCustomerId("00000000-0000-0000-0000-000000000001");
+    p.setStatus("CREATED");
+
+    given(getPaymentHandler.byId(42L)).willReturn(Optional.of(p));
+
+    mvc.perform(get("/api/payments/42").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.id").value(42))
+            .andExpect(jsonPath("$.amount").value(15.00))
+            .andExpect(jsonPath("$.currency").value("EUR"));
+  }
+
+  @Test
+  void get_missing_returns_404_problem_json() throws Exception {
+    given(getPaymentHandler.byId(999L)).willReturn(Optional.empty());
+
+    mvc.perform(get("/api/payments/999").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(header().string("Content-Type", "application/problem+json"))
+            .andExpect(jsonPath("$.title").value("Payment Not Found"));
   }
 }
