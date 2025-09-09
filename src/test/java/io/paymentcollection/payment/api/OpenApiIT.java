@@ -41,12 +41,7 @@ class OpenApiIT {
     assertThat(res.getStatusCode().value()).isEqualTo(200);
   }
 
-  // @Test
-  // That’s a binary incompatibility between springdoc-openapi and the Spring Framework version in
-  // your project
-  // At the moment, springdoc hasn’t released 2.7.x for Boot 3.5. You’ll need either
-  // Wait for springdoc to catch up with 3.5.x, or use an alternative like springdoc fork
-  // (spring-auto-openapi).
+  @Test
   void apiDocs_should_be_enabled_by_default() {
     ResponseEntity<String> res = rest.getForEntity("/v3/api-docs", String.class);
     assertThat(res.getStatusCode().is2xxSuccessful()).isTrue();
