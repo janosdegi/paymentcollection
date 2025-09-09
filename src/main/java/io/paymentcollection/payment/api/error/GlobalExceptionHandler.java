@@ -41,13 +41,18 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ProblemDetail> handle(
       HttpMessageNotReadableException ex, HttpServletRequest req) {
+    String traceId = traceId(req);
     var pd =
         problem(
             HttpStatus.BAD_REQUEST,
             "Malformed Request",
             ex.getMostSpecificCause().getMessage(),
             APP_ERRORS + "bad-request",
-            traceId(req));
+            traceId);
+    if (traceId != null) {
+      pd.setProperty(TraceIdFilter.TRACE_ID_KEY, traceId);
+    }
+
     return respond(pd);
   }
 

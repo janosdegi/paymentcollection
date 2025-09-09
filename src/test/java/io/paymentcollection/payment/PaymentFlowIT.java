@@ -71,10 +71,10 @@ class PaymentFlowIT extends ITBase {
         .andExpect(status().isConflict());
   }
 
-    @Test
-    void get_missing_returns_404() throws Exception {
-        mvc.perform(get("/api/payments/123456"))
-                .andExpect(status().isNotFound())
-                .andExpect(header().string("Content-Type", "application/problem+json"));
-    }
+  @Test
+  void get_missing_returns_404() throws Exception {
+    mvc.perform(get("/api/payments/123456"))
+        .andExpect(status().isNotFound())
+        .andExpect(header().string("Content-Type", "application/problem+json"));
+  }
 }

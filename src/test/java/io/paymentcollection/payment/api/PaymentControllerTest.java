@@ -2,7 +2,9 @@ package io.paymentcollection.payment.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,7 +15,6 @@ import io.paymentcollection.payment.application.GetPaymentHandler;
 import io.paymentcollection.payment.domain.Payment;
 import java.math.BigDecimal;
 import java.util.Optional;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author degijanos
@@ -37,11 +36,9 @@ class PaymentControllerTest {
   @Autowired MockMvc mvc;
 
   // ✅ Provide the missing bean for the MVC slice
-  @MockitoBean
-  CreatePaymentHandler handler;
+  @MockitoBean CreatePaymentHandler handler;
 
-  @MockitoBean
-  GetPaymentHandler getPaymentHandler;
+  @MockitoBean GetPaymentHandler getPaymentHandler;
 
   @Test
   void create_valid_returns_201_and_location() throws Exception {
@@ -111,11 +108,11 @@ class PaymentControllerTest {
     given(getPaymentHandler.byId(42L)).willReturn(Optional.of(p));
 
     mvc.perform(get("/api/payments/42").accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.id").value(42))
-            .andExpect(jsonPath("$.amount").value(15.00))
-            .andExpect(jsonPath("$.currency").value("EUR"));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"))
+        .andExpect(jsonPath("$.id").value(42))
+        .andExpect(jsonPath("$.amount").value(15.00))
+        .andExpect(jsonPath("$.currency").value("EUR"));
   }
 
   @Test
@@ -123,8 +120,8 @@ class PaymentControllerTest {
     given(getPaymentHandler.byId(999L)).willReturn(Optional.empty());
 
     mvc.perform(get("/api/payments/999").accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound())
-            .andExpect(header().string("Content-Type", "application/problem+json"))
-            .andExpect(jsonPath("$.title").value("Payment Not Found"));
+        .andExpect(status().isNotFound())
+        .andExpect(header().string("Content-Type", "application/problem+json"))
+        .andExpect(jsonPath("$.title").value("Payment Not Found"));
   }
 }

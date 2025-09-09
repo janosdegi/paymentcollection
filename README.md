@@ -79,3 +79,9 @@ Clients should log and/or display `detail` and include `X-Trace-Id` when reporti
 - Same key + different body → `409 Conflict`.
 - Validation: `amount > 0`, supported `currency/method`, `customerId` required.
 - Errors are `application/problem+json` (RFC 7807).
+
+## Observability & Docs
+- Each response includes `X-Trace-Id` header; error responses (RFC7807) also contain `"traceId"`.
+- Logs include `[traceId=...]` for correlation.
+- Health endpoint: `/actuator/health`.
+- OpenAPI JSON: `/v3/api-docs`. Swagger UI: `/swagger-ui.html` (local only).
