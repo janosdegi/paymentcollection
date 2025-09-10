@@ -22,6 +22,10 @@ Spring Boot project with Maven and CI.
 docker compose up -d
 ```
 
+```bash
+docker compose up -d <service_name>
+```
+
 ### Stop services
 
 ```bash
@@ -85,3 +89,26 @@ Clients should log and/or display `detail` and include `X-Trace-Id` when reporti
 - Logs include `[traceId=...]` for correlation.
 - Health endpoint: `/actuator/health`.
 - OpenAPI JSON: `/v3/api-docs`. Swagger UI: `/swagger-ui.html` (local only).
+
+## Elasticsearch (Document Setup)
+
+This service uses **Elasticsearch** to index and search payment documents.
+
+### 1. Run Elasticsearch via Docker
+
+Start a single-node Elasticsearch container:
+```bash
+docker compose up -d elasticsearch
+```
+
+### 2. Check if it’s running
+```bash
+curl http://localhost:9200
+```
+
+### 3. Verify Index Existence
+The application will automatically create the payments index at startup (via PaymentIndexInitializer).
+To check if the index exists:
+```bash
+curl -X GET "http://localhost:9200/payments?pretty"
+```

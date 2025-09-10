@@ -35,9 +35,7 @@ class PaymentControllerTest {
 
   @Autowired MockMvc mvc;
 
-  // ✅ Provide the missing bean for the MVC slice
   @MockitoBean CreatePaymentHandler handler;
-
   @MockitoBean GetPaymentHandler getPaymentHandler;
 
   @Test

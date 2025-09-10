@@ -1,0 +1,17 @@
+{
+  "index_patterns": ["payments*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1,
+    "refresh_interval": "1s"
+  },
+  "mappings": {
+    "properties": {
+      "date": { "type": "date" },
+      "amount": { "type": "double" },
+      "status": { "type": "keyword" },
+      "customerId": { "type": "keyword" },
+      "customerName": { "type": "text", "analyzer": "standard" }
+    }
+  }
+}
