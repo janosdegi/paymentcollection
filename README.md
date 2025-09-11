@@ -112,3 +112,11 @@ To check if the index exists:
 ```bash
 curl -X GET "http://localhost:9200/payments?pretty"
 ```
+
+## Outbox Pattern
+
+This service uses an **outbox table** to reliably index payments into Elasticsearch.
+
+- On payment insert/update, a record is written to the `outbox` table.
+- A background worker polls unprocessed events and writes them into Elasticsearch.
+- This ensures eventual consistency between PostgreSQL and Elasticsearch.

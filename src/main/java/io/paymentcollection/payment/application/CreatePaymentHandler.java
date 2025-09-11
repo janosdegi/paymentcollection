@@ -1,12 +1,18 @@
 package io.paymentcollection.payment.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.paymentcollection.payment.domain.IdempotencyRecord;
 import io.paymentcollection.payment.domain.Payment;
+import io.paymentcollection.payment.infrastructure.messaging.PaymentOutboxMapper;
 import io.paymentcollection.payment.infrastructure.persistence.JpaIdempotencyRepository;
+import io.paymentcollection.payment.infrastructure.persistence.JpaOutboxRepository;
 import io.paymentcollection.payment.infrastructure.persistence.JpaPaymentRepository;
+import io.paymentcollection.payment.infrastructure.persistence.OutboxEvent;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Instant;
 import java.util.HexFormat;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +22,18 @@ public class CreatePaymentHandler {
 
   private final JpaPaymentRepository payments;
   private final JpaIdempotencyRepository idemRepo;
+  private final JpaOutboxRepository outboxRepo;
+  private final ObjectMapper objectMapper;
 
-  public CreatePaymentHandler(JpaPaymentRepository payments, JpaIdempotencyRepository idemRepo) {
+  public CreatePaymentHandler(
+      JpaPaymentRepository payments,
+      JpaIdempotencyRepository idemRepo,
+      JpaOutboxRepository outboxRepo,
+      ObjectMapper objectMapper) {
     this.payments = payments;
     this.idemRepo = idemRepo;
+    this.outboxRepo = outboxRepo;
+    this.objectMapper = objectMapper;
   }
 
   @Transactional
@@ -71,6 +85,19 @@ public class CreatePaymentHandler {
     rec.setPaymentId(p.getId());
     rec.setStatus("COMPLETED");
     idemRepo.save(rec);
+
+    // save outbox event
+    OutboxEvent event =
+        OutboxEvent.builder()
+            .aggregateType("Payment")
+            .aggregateId(p.getId().toString())
+            .eventType("PaymentCreated")
+            .payload(objectMapper.convertValue(PaymentOutboxMapper.toPayload(p), Map.class))
+            .createdAt(Instant.now())
+            .processed(false)
+            .build();
+
+    outboxRepo.save(event);
 
     return Result.created(p);
   }
