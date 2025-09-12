@@ -1,10 +1,7 @@
 package io.paymentcollection.payment.infrastructure.messaging;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.paymentcollection.payment.infrastructure.persistence.ElasticsearchPaymentRepository;
 import io.paymentcollection.payment.infrastructure.persistence.JpaOutboxRepository;
 import io.paymentcollection.payment.infrastructure.persistence.OutboxEvent;
-import io.paymentcollection.payment.infrastructure.persistence.document.PaymentDocument;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OutboxWorker {
 
   private final JpaOutboxRepository repository;
-  private final ElasticsearchPaymentRepository esRepository;
-  private final ObjectMapper mapper;
+  private final OutboxProcessor processor;
 
   @Scheduled(fixedDelay = 5000) // every 5 seconds
   @Transactional
@@ -35,13 +31,7 @@ public class OutboxWorker {
 
     for (OutboxEvent event : events) {
       try {
-        PaymentDocument doc = mapper.convertValue(event.getPayload(), PaymentDocument.class);
-
-        esRepository.save(doc);
-
-        event.setProcessed(true);
-        repository.save(event);
-        log.info("Processed outbox event {}", event.getId());
+        processor.indexEvent(event); // goes through proxy, so retry/recover works
       } catch (Exception e) {
         log.error("Failed to process event {}", event.getId(), e);
       }

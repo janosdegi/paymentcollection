@@ -1,6 +1,7 @@
 package io.paymentcollection.payment.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -8,13 +9,14 @@ import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
 import io.paymentcollection.AbstractElasticsearchIntegrationTest;
 import io.paymentcollection.payment.domain.Payment;
 import io.paymentcollection.payment.infrastructure.messaging.OutboxWorker;
-import io.paymentcollection.payment.infrastructure.persistence.ElasticsearchPaymentRepository;
-import io.paymentcollection.payment.infrastructure.persistence.JpaOutboxRepository;
-import io.paymentcollection.payment.infrastructure.persistence.JpaPaymentRepository;
-import io.paymentcollection.payment.infrastructure.persistence.OutboxEvent;
+import io.paymentcollection.payment.infrastructure.persistence.*;
 import io.paymentcollection.payment.infrastructure.persistence.document.PaymentDocument;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +38,7 @@ class PaymentElasticsearchIT extends AbstractElasticsearchIntegrationTest {
   @Autowired JpaOutboxRepository outboxRepo;
   @Autowired OutboxWorker outboxWorker;
   @Autowired private ElasticsearchPaymentRepository esRepo;
+  @Autowired private JpaDeadLetterRepository deadLetterRepository;
 
   @Test
   void shouldCreatePaymentsIndexOnStartup() throws Exception {
@@ -108,5 +111,40 @@ class PaymentElasticsearchIT extends AbstractElasticsearchIntegrationTest {
     // then
     assertThat(found).isPresent();
     assertThat(found.get().getCustomerId()).isEqualTo(paymentFound.getCustomerId());
+  }
+
+  @Test
+  void shouldMoveEventToDeadLetterAfterMaxRetries() {
+
+    // given: invalid payload - payload as map (not matching PaymentDocument)
+    Map<String, Object> badPayload = new HashMap<>();
+    badPayload.put("id", 21331);
+    badPayload.put("date", "this-is-not-a-date");
+    badPayload.put("amount", "not-a-number\"");
+
+    OutboxEvent badEvent =
+        OutboxEvent.builder()
+            .aggregateType("Payment")
+            .aggregateId("bad-1")
+            .eventType("CREATED")
+            .payload(badPayload) // <-- will fail deserialization
+            .processed(false)
+            .createdAt(Instant.now())
+            .build();
+
+    outboxRepo.save(badEvent);
+
+    // when
+    outboxWorker.processOutbox(); // will trigger retries, then @Recover
+
+    // then (wait until retries + recover finish)
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () -> {
+              List<DeadLetterEvent> deadLetters = deadLetterRepository.findAll();
+              assertThat(deadLetters).isNotEmpty();
+              assertThat(deadLetters.get(0).getAggregateId()).isEqualTo("bad-1");
+            });
   }
 }

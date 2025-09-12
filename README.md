@@ -120,3 +120,15 @@ This service uses an **outbox table** to reliably index payments into Elasticsea
 - On payment insert/update, a record is written to the `outbox` table.
 - A background worker polls unprocessed events and writes them into Elasticsearch.
 - This ensures eventual consistency between PostgreSQL and Elasticsearch.
+
+## Dead-Letter Queue
+
+If indexing into Elasticsearch fails repeatedly:
+- The event is retried with exponential backoff (3 attempts by default).
+- After max retries, the event is moved into the `dead_letter` table.
+- `dead_letter` contains the error reason and failed payload.
+
+### Recovery Options
+1. Inspect `dead_letter` table for root cause.
+2. Fix payload or system issue.
+3. Reinsert payload into `outbox` if retry is desired.
