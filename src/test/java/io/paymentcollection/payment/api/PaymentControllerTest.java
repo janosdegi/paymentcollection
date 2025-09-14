@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.paymentcollection.payment.api.error.GlobalExceptionHandler;
 import io.paymentcollection.payment.application.CreatePaymentHandler;
 import io.paymentcollection.payment.application.GetPaymentHandler;
+import io.paymentcollection.payment.application.SearchPaymentsHandler;
 import io.paymentcollection.payment.domain.Payment;
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -37,6 +38,8 @@ class PaymentControllerTest {
 
   @MockitoBean CreatePaymentHandler handler;
   @MockitoBean GetPaymentHandler getPaymentHandler;
+  @MockitoBean
+  SearchPaymentsHandler searchHandler;
 
   @Test
   void create_valid_returns_201_and_location() throws Exception {

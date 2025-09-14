@@ -6,6 +6,11 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  elasticsearch:
+    uris: http://localhost:9200
+    # if security enabled:
+    # username: elastic
+    # password: changeme
 
 management:
   endpoints:

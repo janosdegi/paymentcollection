@@ -3,7 +3,10 @@ package io.paymentcollection.payment.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.paymentcollection.payment.application.CreatePaymentHandler;
 import io.paymentcollection.payment.application.GetPaymentHandler;
+import io.paymentcollection.payment.application.SearchPaymentsHandler;
 import io.paymentcollection.payment.domain.Payment;
+import io.paymentcollection.payment.domain.PaymentSearchRequest;
+import io.paymentcollection.payment.domain.PaymentSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,12 +32,14 @@ public class PaymentController {
 
   private final CreatePaymentHandler createHandler;
   private final GetPaymentHandler getHandler;
+  private final SearchPaymentsHandler searchHandler;
   private final ObjectMapper objectMapper;
 
-  public PaymentController(
-      CreatePaymentHandler handler, GetPaymentHandler getHandler, ObjectMapper objectMapper) {
+  public PaymentController(CreatePaymentHandler handler, GetPaymentHandler getHandler,
+                           SearchPaymentsHandler searchHandler, ObjectMapper objectMapper) {
     this.createHandler = handler;
     this.getHandler = getHandler;
+    this.searchHandler = searchHandler;
     this.objectMapper = objectMapper;
   }
 
@@ -138,6 +143,13 @@ public class PaymentController {
                   .contentType(MediaType.valueOf("application/problem+json"))
                   .body(pd);
             });
+  }
+
+  @Operation(summary = "Search payments", description = "Search payments by filters, pagination and sorting.")
+  @ApiResponse(responseCode = "200", description = "Payments found")
+  @GetMapping("/api/payments/search")
+  public ResponseEntity<PaymentSearchResponse> search(PaymentSearchRequest request) {
+    return ResponseEntity.ok(searchHandler.handle(request));
   }
 
   private String canonicalJson(Object o) {

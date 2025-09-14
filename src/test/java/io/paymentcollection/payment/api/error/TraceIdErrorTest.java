@@ -3,7 +3,9 @@ package io.paymentcollection.payment.api.error;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import io.paymentcollection.payment.application.CreatePaymentHandler;
 import io.paymentcollection.payment.application.GetPaymentHandler;
+import io.paymentcollection.payment.application.SearchPaymentsHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,10 +25,14 @@ class TraceIdErrorTest {
 
   @Autowired MockMvc mvc;
 
-  @MockitoBean GetPaymentHandler getPaymentHandler;
+  @MockitoBean
+  GetPaymentHandler getPaymentHandler;
 
-  @org.springframework.test.context.bean.override.mockito.MockitoBean
-  io.paymentcollection.payment.application.CreatePaymentHandler handler;
+  @MockitoBean
+  CreatePaymentHandler handler;
+
+  @MockitoBean
+  SearchPaymentsHandler searchHandler;
 
   @Test
   void error_contains_traceId_header_and_body() throws Exception {
