@@ -38,8 +38,7 @@ class PaymentControllerTest {
 
   @MockitoBean CreatePaymentHandler handler;
   @MockitoBean GetPaymentHandler getPaymentHandler;
-  @MockitoBean
-  SearchPaymentsHandler searchHandler;
+  @MockitoBean SearchPaymentsHandler searchHandler;
 
   @Test
   void create_valid_returns_201_and_location() throws Exception {

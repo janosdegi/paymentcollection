@@ -25,14 +25,11 @@ class TraceIdErrorTest {
 
   @Autowired MockMvc mvc;
 
-  @MockitoBean
-  GetPaymentHandler getPaymentHandler;
+  @MockitoBean GetPaymentHandler getPaymentHandler;
 
-  @MockitoBean
-  CreatePaymentHandler handler;
+  @MockitoBean CreatePaymentHandler handler;
 
-  @MockitoBean
-  SearchPaymentsHandler searchHandler;
+  @MockitoBean SearchPaymentsHandler searchHandler;
 
   @Test
   void error_contains_traceId_header_and_body() throws Exception {

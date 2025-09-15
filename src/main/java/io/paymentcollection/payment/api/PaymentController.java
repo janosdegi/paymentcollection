@@ -35,8 +35,11 @@ public class PaymentController {
   private final SearchPaymentsHandler searchHandler;
   private final ObjectMapper objectMapper;
 
-  public PaymentController(CreatePaymentHandler handler, GetPaymentHandler getHandler,
-                           SearchPaymentsHandler searchHandler, ObjectMapper objectMapper) {
+  public PaymentController(
+      CreatePaymentHandler handler,
+      GetPaymentHandler getHandler,
+      SearchPaymentsHandler searchHandler,
+      ObjectMapper objectMapper) {
     this.createHandler = handler;
     this.getHandler = getHandler;
     this.searchHandler = searchHandler;
@@ -145,7 +148,9 @@ public class PaymentController {
             });
   }
 
-  @Operation(summary = "Search payments", description = "Search payments by filters, pagination and sorting.")
+  @Operation(
+      summary = "Search payments",
+      description = "Search payments by filters, pagination and sorting.")
   @ApiResponse(responseCode = "200", description = "Payments found")
   @GetMapping("/api/payments/search")
   public ResponseEntity<PaymentSearchResponse> search(PaymentSearchRequest request) {
