@@ -1,0 +1,5 @@
+app:
+  seed:
+    enabled: true
+    count: 100000
+    runOutboxAfter: true

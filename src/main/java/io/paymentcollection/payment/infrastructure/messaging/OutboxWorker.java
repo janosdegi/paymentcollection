@@ -26,7 +26,7 @@ public class OutboxWorker {
 
   @Scheduled(fixedDelay = 5000) // every 5 seconds
   @Transactional
-  public void processOutbox() {
+  public int processOutbox() {
     List<OutboxEvent> events = repository.findTop50ByProcessedFalseOrderByCreatedAtAsc();
 
     for (OutboxEvent event : events) {
@@ -36,5 +36,6 @@ public class OutboxWorker {
         log.error("Failed to process event {}", event.getId(), e);
       }
     }
+    return events.size();
   }
 }
